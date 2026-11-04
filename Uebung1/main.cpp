@@ -139,52 +139,100 @@ void setPoint(Point p, Color c = Color(0, 0, 0))
 
 void BresenhamLine(Point p1, Point p2, Color c)
 {
-	// first point
-	setPoint(p1, c);
-	printf("-> First Point x: %d, y: %d\n\n", p1.x, p1.y);
+	int dx = p1.x - p2.x;
+	int dy = p1.y - p2.y;
 
-	// koordinates p1,p2
-	int x1 = p1.x;
-	int x2 = p2.x;
-	int y1 = p1.y;
-	int y2 = p2.y;
+	int d = 2 * dy - dx;
+	int y = p1.y;
 
-	// ganze Zahlen sichern
-	int dx = abs(x2 - x1);
-	int dy = abs(y2 - y1);
-
-	// Vorzeichen der Richtung
-	int sx = (x1 < x2) ? 1 : -1;
-	int sy = (y1 < y2) ? 1 : -1;
-
-	// initialisierung Entscheidungsparameter
-	int err = dx - dy;
-
-	// berechnung der Punkte zwischen p1 und p2
-	setPoint(p1, c);
-	while (true)
+	for(int x = p1.x; x <= p1.x; x++)
 	{
-		printf("Point: x: %d, y: %d\t | Parameter: err = %d, sx = %d , sy = %d, dx: %d, dy: %d\n", x1, y1, err, sx, sy, dx, dy);
-
-		if (x1 == x2 && y1 == y2)
-			break; // endpunt erreicht
-
-		int e2 = 2 * err; // Entscheidungsparameter verdoppeln
-		if (e2 > -dy)	  // x-richtung
+		setPoint(Point(x,y), c);
+		if (d >= 0)
 		{
-			err -= dy;
-			x1 += sx;
+			y++;
+			d -= 2 *dx;
 		}
-		if (e2 < dx) // y-richtung
-		{
-			err += dx;
-			y1 += sy;
-		}
-		setPoint(Point(x1, y1), c); //{point},{color}
+		d += 2 * dy;
 	}
-	// last point
-	printf("-> Last Point x: %d, y: %d\n", p2.x, p2.y);
-	setPoint(p2, c);
+	
+	// first point
+	//setPoint(p1, c);
+	
+}
+
+// Exercise 1.2
+void BresenhamLineOctant(Point p1, Point p2, Color c)
+{
+    // Determine required transformations
+    bool reflectX = false;
+    bool reflectY = false;
+    bool swapXY = false;
+
+    // Translate coordinates relative to the starting point
+    int dx = p2.x - p1.x;
+    int dy = p2.y - p1.y;
+
+    // Reflection at y-axis
+    if (dx < 0)
+    {
+        reflectX = true;
+        dx = -dx;
+    }
+
+    // Reflection at x-axis
+    if (dy < 0)
+    {
+        reflectY = true;
+        dy = -dy;
+    }
+
+    // Swap coordinates for steep lines
+    if (dy > dx)
+    {
+        swapXY = true;
+        std::swap(dx, dy);
+    }
+
+    // Bresenham initialization
+    int d = 2 * dy - dx;
+    int y = 0;
+
+    printf("Starting point: (%d, %d)\n", p1.x, p1.y);
+    printf("Ending point:   (%d, %d)\n\n", p2.x, p2.y);
+
+    for (int x = 0; x <= dx; x++)
+    {
+        int px = x;
+        int py = y;
+
+        if (swapXY)
+            std::swap(px, py);
+
+        if (reflectX)
+            px = -px;
+
+        if (reflectY)
+            py = -py;
+
+        px += p1.x;
+        py += p1.y;
+
+        // Print current pixel
+        printf("Point: x = %3d, y = %3d | d = %3d\n", px, py, d);
+
+        setPoint(Point(px, py), c);
+
+        if (d >= 0)
+        {
+            y++;
+            d -= 2 * dx;
+        }
+
+        d += 2 * dy;
+    }
+
+    printf("\nFinished drawing line.\n");
 }
 
 //
@@ -194,13 +242,42 @@ void BresenhamLine(Point p1, Point p2, Color c)
 // - Use setPoint to plot individual points/pixels.
 // - Also plot the mid-point.
 //
-// void BresenhamCircle(Point p, int r, Color c)
-// {
-// 	// mid-point
-// 	setPoint(p, c);
+void BresenhamCircle (Point p, int r, Color c)
+{
+	// mid-point
+	setPoint (p, c);
+	//...
 
-// 	// ...
-// }
+	int x = 0;
+	int y = r;
+	int d = 5 - 4 * r;
+
+	auto plotOctant2 = [&](int x, int y) {
+		setPoint(Point(p.x + x, p.y + y),c);
+		setPoint(Point(p.x - x, p.y + y),c); //mirror over y-axis
+		setPoint(Point(p.x + x, p.y - y),c);
+		setPoint(Point(p.x - x, p.y - y),c); //mirror over both
+		setPoint(Point(p.x + y, p.y + x),c); //swap x and y
+		setPoint(Point(p.x - y, p.y + x),c); //mirror over
+		setPoint(Point(p.x + y, p.y - x),c);
+		setPoint(Point(p.x - y, p.y - x),c); //mirror over both
+	};
+	plotOctant2(x,y);
+
+	while(y>x){
+		if(d >= 0) { //chose Se
+			int deltaSE = 4 * (2* (x-y) + 5);
+			d += deltaSE;
+			x++;
+			y--;
+		} else { //choose E
+			int deltaE = 4 * (2*x + 3);
+			d += deltaE;
+			x++;
+		} 
+		plotOctant2(x,y);
+	}
+}
 
 //
 // This (callback) function triggers a redraw of the viewport/display.
@@ -223,6 +300,7 @@ void display(void)
 	Point p2(20, -15);			 // last  point of the line, aka end   point
 	Color cRed(1, 0, 0);		 // color       of the line
 	BresenhamLine(p1, p2, cRed); // plot the line
+	BresenhamLineOctant(p1,p2, cRed);
 
 	// Circle
 	//  int r = 17;					  // radius    of the circle
