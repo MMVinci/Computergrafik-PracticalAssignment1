@@ -242,41 +242,65 @@ void BresenhamLineOctant(Point p1, Point p2, Color c)
 // - Use setPoint to plot individual points/pixels.
 // - Also plot the mid-point.
 //
-void BresenhamCircle (Point p, int r, Color c)
+void BresenhamCircle(Point p, int r, Color c)
 {
-	// mid-point
-	setPoint (p, c);
-	//...
+    int x = 0;
+    int y = r;
 
-	int x = 0;
-	int y = r;
-	int d = 5 - 4 * r;
+    int d = 5 - 4 * r;
 
-	auto plotOctant2 = [&](int x, int y) {
-		setPoint(Point(p.x + x, p.y + y),c);
-		setPoint(Point(p.x - x, p.y + y),c); //mirror over y-axis
-		setPoint(Point(p.x + x, p.y - y),c);
-		setPoint(Point(p.x - x, p.y - y),c); //mirror over both
-		setPoint(Point(p.x + y, p.y + x),c); //swap x and y
-		setPoint(Point(p.x - y, p.y + x),c); //mirror over
-		setPoint(Point(p.x + y, p.y - x),c);
-		setPoint(Point(p.x - y, p.y - x),c); //mirror over both
-	};
-	plotOctant2(x,y);
+    while (x <= y)
+    {
+        // Draw only the second octant
+        setPoint(Point(x, y), c);
 
-	while(y>x){
-		if(d >= 0) { //chose Se
-			int deltaSE = 4 * (2* (x-y) + 5);
-			d += deltaSE;
-			x++;
-			y--;
-		} else { //choose E
-			int deltaE = 4 * (2*x + 3);
-			d += deltaE;
-			x++;
-		} 
-		plotOctant2(x,y);
-	}
+        if (d >= 0)
+        {
+            d += 8 * (x - y) + 20;
+            x++;
+            y--;
+        }
+        else
+        {
+            d += 8 * x + 12;
+            x++;
+        }
+    }
+}
+
+void BresenhamFullCircle(Point p, int r, Color c)
+{
+    int x = 0;
+    int y = r;
+
+    int d = 5 - 4 * r;
+
+    while (x <= y)
+    {
+        // Reflect pixels into all eight octants
+        setPoint(Point(p.x + x, p.y + y), c);
+        setPoint(Point(p.x - x, p.y + y), c);
+        setPoint(Point(p.x + x, p.y - y), c);
+        setPoint(Point(p.x - x, p.y - y), c);
+
+        setPoint(Point(p.x + y, p.y + x), c);
+        setPoint(Point(p.x - y, p.y + x), c);
+        setPoint(Point(p.x + y, p.y - x), c);
+        setPoint(Point(p.x - y, p.y - x), c);
+
+        // Update decision parameter
+        if (d >= 0)
+        {
+            d += 8 * (x - y) + 20;
+            x++;
+            y--;
+        }
+        else
+        {
+            d += 8 * x + 12;
+            x++;
+        }
+    }
 }
 
 //
@@ -296,17 +320,28 @@ void display(void)
 	// - Try    here different parameter settings, i.e. start point, end point, mid-point, radius.
 	//
 	// Draw a line
-	Point p1(-10, 20);			 // first point of the line, aka start point
-	Point p2(20, -15);			 // last  point of the line, aka end   point
-	Color cRed(1, 0, 0);		 // color       of the line
-	BresenhamLine(p1, p2, cRed); // plot the line
-	BresenhamLineOctant(p1,p2, cRed);
+	Point p1(-10, 20);			 		// first point of the line, aka start point
+	Point p2(20, -15);			 		// last  point of the line, aka end   point
+	Color cRed(1, 0, 0);		 		// color       of the line
+	BresenhamLine(p1, p2, cRed); 		// plot the line
+
+	// Draw a line with octant handling
+	Point p1(10, -20);			 		// first point of the line,
+	Point p2(-20, 15);			 		// last  point of the line, aka end   point
+	Color cGreen(0, 1, 0);		 		// color       of the line
+	BresenhamLineOctant(p1,p2, cGreen);
 
 	// Circle
-	//  int r = 17;					  // radius    of the circle
-	//  Point p(-3, -5);			  // mid-point of the circle
-	//  Color cBlue(0, 0, 1);		  // color     of the circle
-	//  BresenhamCircle(p, r, cBlue); // plot the circle
+	 int r = 17;					  	// radius    of the circle
+	 Point p(-3, -5);			  		// mid-point of the circle
+	 Color cBlue(0, 0, 1);		  		// color     of the circle
+	 BresenhamCircle(p, r, cBlue); 		// plot the circle
+
+	// full Circle
+	 int r = 20;					  	// radius    of the circle
+	 Point p(-3, -5);			  		// mid-point of the circle
+	 Color cGreen(0, 1, 0);		  		// color     of the circle
+	 BresenhamFullCircle(p, r, cGreen); // plot the circle
 
 	//
 	// Please, do not change below this point!
