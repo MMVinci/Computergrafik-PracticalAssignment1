@@ -149,11 +149,11 @@ void BresenhamLine(Point p1, Point p2, Color c)
 	int y1 = p1.y;
 	int y2 = p2.y;
 
-	// ganze Zahlen sichern
+	// positive Zahlen sichern
 	int dx = abs(x2 - x1);
 	int dy = abs(y2 - y1);
 
-	// Vorzeichen der Richtung
+	// vorzeichen der Richtung
 	int sx = (x1 < x2) ? 1 : -1;
 	int sy = (y1 < y2) ? 1 : -1;
 
@@ -172,13 +172,13 @@ void BresenhamLine(Point p1, Point p2, Color c)
 		int e2 = 2 * err; // Entscheidungsparameter verdoppeln
 		if (e2 > -dy)	  // x-richtung
 		{
-			err -= dy;
-			x1 += sx;
+			err -= dy; //
+			x1 += sx;  // x2 erhoehen
 		}
 		if (e2 < dx) // y-richtung
 		{
 			err += dx;
-			y1 += sy;
+			y1 += sy; // y22 erhoehen
 		}
 		setPoint(Point(x1, y1), c); //{point},{color}
 	}
